@@ -58,7 +58,7 @@ function downloadAll(key, account, root, opts, callback) {
   .pipe(new Transform({
     objectMode: true,
     transform: function (mapdata, _, next) {
-      getJson('https://' + account + '.cartodb.com/u/mapgeoprod/api/v2/viz/' + mapdata.id + '/viz.json?api_key=' + key, next);
+      getJson('https://' + account + '.cartodb.com/u/' + account + '/api/v2/viz/' + mapdata.id + '/viz.json?api_key=' + key, next);
     }
   }))
   .on('error', onerr)
