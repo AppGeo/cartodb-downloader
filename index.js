@@ -6,9 +6,26 @@ var fs = require('fs');
 var mkdirp = require('mkdirp');
 var once = require('once');
 var path = require('path');
+var ProgressBar = require('progress');
 
 module.exports = downloadAll;
-function downloadAll(key, account, root, callback) {
+function downloadAll(key, account, root, opts, callback) {
+  if (typeof callback === 'undefined') {
+    callback = opts;
+    opts = {};
+  }
+  if (!key || !account) {
+    return process.nextTick(function () {
+      callback(new Error('missing required argument: ' + (!key ? 'key' : 'username')));
+    });
+  }
+  var useProgresBar = opts.progress;
+  var bar = null;
+  function tick() {
+    if (useProgresBar && bar) {
+      bar.tick();
+    }
+  }
   var onerr = once(callback);
   var mapIdsUrl = `https://${account}.cartodb.com/api/v1/viz?api_key=${key}`;
   var id = 1;
@@ -16,6 +33,12 @@ function downloadAll(key, account, root, callback) {
     var self = this;
     var newURL = mapIdsUrl + `&page=${id++}`;
     getJson(newURL, function (err, resp) {
+      if (useProgresBar && !bar) {
+        bar = new ProgressBar('[:bar] :current/:total', {
+          total: resp.total_entries,
+          width: 20
+        });
+      }
       if (err) {
         return done(err);
       }
@@ -44,6 +67,8 @@ function downloadAll(key, account, root, callback) {
         return thing.type === 'namedmap';
       }).length) {
         this.push(item);
+      } else {
+        tick();
       }
       next();
     }
@@ -87,6 +112,7 @@ function downloadAll(key, account, root, callback) {
               return next(err);
             }
             if (done === 2) {
+              tick();
               next();
             }
           }
