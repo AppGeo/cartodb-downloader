@@ -27,14 +27,16 @@ function downloadAll(key, account, root, opts, callback) {
     }
   }
   var onerr = once(callback);
-  var mapIdsUrl = `https://${account}.cartodb.com/api/v1/viz?api_key=${key}`;
+  var mapIdsUrl = 'https://' + account + '.cartodb.com/api/v1/viz?api_key=' + key;
   var id = 1;
   noms(function (done) {
     var self = this;
-    var newURL = mapIdsUrl + `&page=${id++}`;
+    var newURL = mapIdsUrl + '&page=';
+    newURL += id;
+    id++;
     getJson(newURL, function (err, resp) {
       if (useProgresBar && !bar) {
-        bar = new ProgressBar('[:bar] :current/:total', {
+        bar = new ProgressBar('[:bar] :current/:total  ', {
           total: resp.total_entries,
           width: 20
         });
@@ -56,7 +58,7 @@ function downloadAll(key, account, root, opts, callback) {
   .pipe(new Transform({
     objectMode: true,
     transform: function (mapdata, _, next) {
-      getJson(`https://${account}.cartodb.com/u/mapgeoprod/api/v2/viz/${mapdata.id}/viz.json?api_key=${key}`, next);
+      getJson('https://' + account + '.cartodb.com/u/mapgeoprod/api/v2/viz/' + mapdata.id + '/viz.json?api_key=' + key, next);
     }
   }))
   .on('error', onerr)
@@ -82,7 +84,7 @@ function downloadAll(key, account, root, opts, callback) {
         return thing.type === 'namedmap';
       })[0];
       var mapName = map.options.named_map.name;
-      var mapurl = `https://${account}.cartodb.com/api/v1/map/named/${mapName}?api_key=${key}`;
+      var mapurl = 'https://' + account + '.cartodb.com/api/v1/map/named/' + mapName + '?api_key=' + key;
       getJson(mapurl, function (err, resp) {
         if (err) {
           return next(err);
