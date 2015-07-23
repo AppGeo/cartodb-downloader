@@ -120,7 +120,7 @@ function downloadAll(key, account, root, opts, callback) {
           }
           Object.keys(item).forEach(function (name) {
             var fullPathName = path.join(pathName, name + '.json');
-            fs.writeFile(fullPathName, JSON.stringify(item[name], false, 2), after);
+            fs.writeFile(fullPathName, JSON.stringify(item[name], false, 2).replace('\r', ''), after);
           });
         });
       },
