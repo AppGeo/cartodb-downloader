@@ -87,6 +87,11 @@ function downloadAll(key, account, root, opts, callback) {
       var mapurl = 'https://' + account + '.cartodb.com/api/v1/map/named/' + mapName + '?api_key=' + key;
       getJson(mapurl, function (err, resp) {
         if (err) {
+          if (opts.warn) {
+            console.log(' ');
+            console.warn(err);
+            return next();
+          }
           return next(err);
         }
         var out = {
@@ -131,7 +136,8 @@ function downloadAll(key, account, root, opts, callback) {
   }))
   .on('error', onerr);
 }
-function getJson(url, callback) {
+function getJson(url, callback, run) {
+  run = run || 5;
   https.get(url, function(res) {
     var out = [];
     res
@@ -146,5 +152,10 @@ function getJson(url, callback) {
           callback(null, json);
         }
       });
-  }).on('error', callback);
+  }).on('error', function (e) {
+    if (run === 1) {
+      return callback(e);
+    }
+    getJson(url, callback, run - 1);
+  });
 }

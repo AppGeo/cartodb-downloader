@@ -32,13 +32,28 @@ if (key === null) {
 }
 
 var pathName = argv._[0] || './';
-downloader(key, user, pathName, {progress: true}, function (err) {
+downloader(key, user, pathName, {
+  progress: true,
+  warn: true
+}, function (err) {
     /*eslint no-process-exit:0*/
   if (err) {
-    var e = err && err.stack || err;
+    var e = err;
+    if (err.stack) {
+      e = err.stack;
+    } else if (err.errors) {
+      e = err.errors;
+    } else {
+      e = err.toString();
+    }
+    if (Array.isArray(e)) {
+      e = e.join('\n');
+    }
+    process.stdout.write('\n');
     console.log(e.red);
     process.exit(1);
   } else {
+    process.stdout.write('\n');
     console.log('done'.green);
     process.exit();
   }
